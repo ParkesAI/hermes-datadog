@@ -18,6 +18,10 @@ Qualification completed on 2026-11-06:
 - The provider test used an unsaved message draft containing only the new webhook
   recipient. The draft was cancelled; the original saved monitor query, thresholds,
   message and Slack recipient were verified unchanged afterward.
+- Replaying the provider test payload returned 202 with no additional model messages.
+  Replaying that identity with changed title returned 503; native logs confirmed
+  `admission_conflict`, and the completed session stayed unchanged. This is a
+  rejected changed payload, not a successful duplicate acknowledgement.
 - The saved notification rule displayed the expected scoped coverage and separate
   Alert/OK routing to the new webhook. Billing monitors were excluded from rollout.
 - An unsigned public POST returned 401. Public health returned 404. Receiver and native

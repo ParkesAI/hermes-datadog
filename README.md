@@ -132,7 +132,11 @@ Malformed admitted event identities return 400.
 The original bytes are preserved. Native delivery identity derives from monitor ID,
 event ID, transition and scope; changing caller delivery headers or cosmetic event
 text cannot bypass suppression. Recoveries and distinct monitor groups remain
-separate deliveries. Replay retention and durable processing belong to Hermes.
+separate deliveries. An identical retry is acknowledged without another agent run.
+Changing content under a retained identity is a native admission conflict: the
+qualified Hermes version returns 503, and the plugin preserves that failure rather
+than executing the changed event. Investigate repeated conflicts; do not reuse an
+event ID for different content. Replay retention and durable processing belong to Hermes.
 `$DATE` is the event time, not proof of request freshness, so the receiver does not
 reject delayed recovery notifications based on it.
 
