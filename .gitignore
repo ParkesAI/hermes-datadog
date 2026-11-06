@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+dist/
+*.egg-info/
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.log
+.coverage
+htmlcov/
+.DS_Store
+.hermes-sdk/
+.hermes-test-home/

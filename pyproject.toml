@@ -1,0 +1,37 @@
+[project]
+name = "hermes-datadog"
+version = "0.1.0"
+description = "Authenticated Datadog monitor-alert ingress plugin for Hermes Agent"
+readme = "README.md"
+authors = [{ name = "ParkesAI contributors" }]
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = ["aiohttp>=3.12,<4"]
+
+[project.urls]
+Homepage = "https://github.com/ParkesAI/hermes-datadog"
+Issues = "https://github.com/ParkesAI/hermes-datadog/issues"
+
+[project.entry-points."hermes_agent.plugins"]
+hermes-datadog = "hermes_datadog"
+
+[dependency-groups]
+dev = ["ruff>=0.14,<0.15", "pyyaml>=6,<7"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["hermes_datadog"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"plugin.yaml" = "hermes_datadog/plugin.yaml"
+
+[tool.hatch.build.targets.sdist]
+include = ["hermes_datadog", "tests", "scripts", "docs", "uv.lock", "plugin.yaml", "__init__.py", "README.md", "LICENSE", "CHANGELOG.md", "SECURITY.md", "CONTRIBUTING.md"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

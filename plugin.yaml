@@ -1,0 +1,10 @@
+name: hermes-datadog
+label: Datadog webhooks
+kind: platform
+version: 0.1.0
+description: Authenticated Datadog monitor-alert ingress for native Hermes webhooks.
+author: ParkesAI contributors
+license: MIT
+homepage: https://github.com/ParkesAI/hermes-datadog
+python_dependencies:
+  - aiohttp>=3.12,<4
