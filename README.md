@@ -123,6 +123,7 @@ and [Notification Rules](https://docs.datadoghq.com/monitors/notify/notification
 | `extra.port` | `8652` | Receiver port |
 | `extra.upstream_port` | `8644` | Native webhook port on IPv4 loopback |
 | `extra.route` | `datadog` | Native route name |
+| `extra.profile` | omitted | Named native profile; omission targets default |
 
 Receiver and upstream ports must differ. Requests are bounded to 1 MiB; native
 forwarding has a five-second deadline and refuses redirects. Native failure yields
@@ -139,6 +140,19 @@ than executing the changed event. Investigate repeated conflicts; do not reuse a
 event ID for different content. Replay retention and durable processing belong to Hermes.
 `$DATE` is the event time, not proof of request freshness, so the receiver does not
 reject delayed recovery notifications based on it.
+
+## Target a named profile
+
+Set `platforms.datadog.extra.profile: coordinator` to forward to
+`/p/coordinator/webhooks/datadog` on the native listener. Set
+`platforms.webhook.extra.routes.datadog.profile: coordinator` to bind the native
+route to the same profile. Replace `coordinator` with an existing, served profile.
+Its native route still controls tools and response delivery.
+
+Omitting `extra.profile` preserves default-profile routing. Invalid names fail
+configuration validation; an unavailable or mismatched destination returns a
+retryable failure without falling back to the default profile. The public
+provider URL, signing credential and payload are unchanged.
 
 ## Update and remove
 

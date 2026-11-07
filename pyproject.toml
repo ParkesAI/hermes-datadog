@@ -1,6 +1,6 @@
 [project]
 name = "hermes-datadog"
-version = "0.1.0"
+version = "0.1.1"
 description = "Authenticated Datadog monitor-alert ingress plugin for Hermes Agent"
 readme = "README.md"
 authors = [{ name = "ParkesAI contributors" }]

@@ -6,6 +6,7 @@ import io
 import json
 import secrets
 import unittest
+from dataclasses import replace
 
 from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
@@ -17,10 +18,12 @@ class ReceiverTest(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.secret = secrets.token_hex(32)
         self.deliveries = []
+        self.paths = []
         self.upstream_status = 202
         self.redirect_followed = False
 
         async def upstream(request):
+            self.paths.append(request.path)
             body = await request.read()
             timestamp = request.headers["X-Webhook-Timestamp"]
             expected = hmac.new(
@@ -40,6 +43,7 @@ class ReceiverTest(unittest.IsolatedAsyncioTestCase):
 
         app = web.Application()
         app.router.add_post("/webhooks/datadog", upstream)
+        app.router.add_post("/p/reviewer/webhooks/datadog", upstream)
         app.router.add_route("*", "/unexpected", unexpected)
         self.backend = TestServer(app, host="127.0.0.1")
         await self.backend.start_server()
@@ -62,6 +66,25 @@ class ReceiverTest(unittest.IsolatedAsyncioTestCase):
             },
             indent=2,
         ).encode()
+
+    async def test_configured_profile_receives_signed_body_without_default_fallback(self):
+        settings = replace(self.settings, profile="reviewer")
+        client = TestClient(TestServer(create_app(settings), host="127.0.0.1"))
+        await client.start_server()
+        self.addAsyncCleanup(client.close)
+        response = await client.post("/datadog", data=self.body, headers=self.headers())
+        self.assertEqual(response.status, 202)
+        self.assertEqual(self.paths, ["/p/reviewer/webhooks/datadog"])
+        self.assertEqual(self.deliveries[0][0], self.body)
+
+    async def test_unavailable_profile_is_retryable_without_default_fallback(self):
+        settings = replace(self.settings, profile="missing")
+        client = TestClient(TestServer(create_app(settings), host="127.0.0.1"))
+        await client.start_server()
+        self.addAsyncCleanup(client.close)
+        response = await client.post("/datadog", data=self.body, headers=self.headers())
+        self.assertEqual(response.status, 503)
+        self.assertFalse(self.deliveries)
 
     def headers(self, body=None, **extra):
         return {"Authorization": "Bearer " + self.secret, **extra}
@@ -172,6 +195,13 @@ class ReceiverTest(unittest.IsolatedAsyncioTestCase):
 
 
 class SettingsTest(unittest.TestCase):
+    def test_profile_is_optional_and_cannot_escape_its_url_segment(self):
+        valid = {"secret": secrets.token_hex(32), "monitor_ids": frozenset({"101"})}
+        self.assertTrue(Settings(**valid).upstream_url.endswith("/webhooks/datadog"))
+        for profile in ["", "../other", "other/path", "other?x=1", True, 1, "UPPER"]:
+            with self.subTest(profile=profile), self.assertRaises(ValueError):
+                Settings(**valid, profile=profile)
+
     def test_invalid_settings_fail_closed_and_secret_is_not_in_repr(self):
         secret = secrets.token_hex(32)
         valid = {"secret": secret, "monitor_ids": frozenset({"101"})}

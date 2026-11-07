@@ -1,7 +1,7 @@
 name: hermes-datadog
 label: Datadog webhooks
 kind: platform
-version: 0.1.0
+version: 0.1.1
 description: Authenticated Datadog monitor-alert ingress for native Hermes webhooks.
 author: ParkesAI contributors
 license: MIT

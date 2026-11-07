@@ -25,6 +25,7 @@ class Settings:
     port: int = 8652
     upstream_port: int = 8644
     route: str = "datadog"
+    profile: str | None = None
 
     def __post_init__(self):
         if (
@@ -47,9 +48,16 @@ class Settings:
         if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", self.route):
             raise ValueError("Invalid native webhook route name")
 
+        if self.profile is not None and (
+            not isinstance(self.profile, str)
+            or not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", self.profile)
+        ):
+            raise ValueError("Invalid target profile name")
+
     @property
     def upstream_url(self) -> str:
-        return f"http://127.0.0.1:{self.upstream_port}/webhooks/{self.route}"
+        prefix = f"/p/{self.profile}" if self.profile is not None else ""
+        return f"http://127.0.0.1:{self.upstream_port}{prefix}/webhooks/{self.route}"
 
 
 def create_app(settings: Settings) -> web.Application:

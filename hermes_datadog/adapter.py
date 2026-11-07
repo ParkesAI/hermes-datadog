@@ -21,6 +21,7 @@ class DatadogAdapter(BasePlatformAdapter):
             port=extra.get("port", 8652),
             upstream_port=extra.get("upstream_port", 8644),
             route=extra.get("route", "datadog"),
+            profile=extra.get("profile"),
         )
         self.runner = None
 
